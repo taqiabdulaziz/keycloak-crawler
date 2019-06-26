@@ -14,6 +14,8 @@
     "jimp": "^0.6.4",
     "otpauth": "^3.2.7",
     "puppeteer": "^1.18.0",
-    "qrcode-reader": "^1.0.4"
+    "qrcode-reader": "^1.0.4",
+    "query-string": "^6.8.1",
+    "totp": "0.0.1"
   }
 }

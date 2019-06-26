@@ -2,6 +2,8 @@ var Jimp = require("jimp");
 var fs = require('fs')
 var QrCode = require('qrcode-reader');
 var OTPAuth = require('otpauth');
+var totp = require('totp');
+const queryString = require('query-string');
 
 const read = (url) => {
   return new Promise(async (resolve, reject) => {
@@ -10,18 +12,23 @@ const read = (url) => {
     var qr = new QrCode();
     qr.callback = await
     function (err, value) {
-      if (err) {
-        return reject(err)
-        // TODO handle error
-      }
+    
+      if (err) return reject(err)
+
+      const {
+        algorithm,
+        digits,
+        issuer,
+        period,
+        secret,
+      } = queryString.parseUrl(value.result).query
 
       let totp = new OTPAuth.TOTP({
-        issuer: 'boost-svc-merchant-dev',
-        label: 'muhammad.taqi@myboost.id',
-        algorithm: 'SHA1',
-        digits: 6,
-        period: 30,
-        secret: OTPAuth.Secret.fromB32('NJZGINKHNNUHIQKB')
+        issuer,
+        algorithm,
+        digits: Number(digits),
+        period: Number(period),
+        secret: OTPAuth.Secret.fromB32(secret)
       });
 
       let token = totp.generate();
@@ -36,4 +43,14 @@ const read = (url) => {
   })
 }
 
-module.exports = read;
+const execute = async () => {
+  const result = await read()
+  console.log(result);
+  
+}
+
+console.log(execute());
+
+
+
+// module.exports = read;
