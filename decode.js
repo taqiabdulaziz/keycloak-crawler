@@ -3,54 +3,55 @@ var fs = require('fs')
 var QrCode = require('qrcode-reader');
 var OTPAuth = require('otpauth');
 var totp = require('totp');
+const { generateLabel } = require('./helper');
 const queryString = require('query-string');
 
 const read = (url) => {
   return new Promise(async (resolve, reject) => {
-    var buffer = fs.readFileSync(__dirname + '/download.png');
-    const imageData = await Jimp.read(buffer)
-    var qr = new QrCode();
-    qr.callback = await
-    function (err, value) {
-    
-      if (err) return reject(err)
+    try {
+      let newUrl = url.replace(/^data:image\/\w+;base64,/, "");
+      let buffer = Buffer.from(newUrl, 'base64');
+      // let buffer = fs.readFileSync(__dirname + '/download.png')
+      const imageData = await Jimp.read(buffer)
+      var qr = new QrCode();
+      qr.callback = await
 
-      const {
-        algorithm,
-        digits,
-        issuer,
-        period,
-        secret,
-      } = queryString.parseUrl(value.result).query
+      function (err, value) {
+        if (err) return reject(err)
 
-      let totp = new OTPAuth.TOTP({
-        issuer,
-        algorithm,
-        digits: Number(digits),
-        period: Number(period),
-        secret: OTPAuth.Secret.fromB32(secret)
-      });
+        const {
+          algorithm,
+          digits,
+          issuer,
+          period,
+          secret,
+        } = queryString.parseUrl(value.result).query
+        
 
-      let token = totp.generate();
+        let totp = new OTPAuth.TOTP({
+          issuer,
+          algorithm,
+          label: generateLabel(value.result),
+          digits: Number(digits),
+          period: Number(period),
+          secret: OTPAuth.Secret.fromB32(secret)
+        });
 
-      let delta = totp.validate({
-        token: token,
-        window: 10
-      });
-      return resolve(token)
-    };
-    qr.decode(imageData.bitmap);
+        let token = totp.generate();
+
+        let delta = totp.validate({
+          token: token,
+          window: 10
+        });
+        return resolve(token)
+      };
+      qr.decode(imageData.bitmap);
+    } catch (error) {
+      return reject(error)
+    }
   })
 }
 
-const execute = async () => {
-  const result = await read()
-  console.log(result);
-  
-}
+// read()
 
-console.log(execute());
-
-
-
-// module.exports = read;
+module.exports = read;
