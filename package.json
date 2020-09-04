@@ -12,7 +12,7 @@
   "dependencies": {
     "dotenv": "^8.0.0",
     "jimp": "^0.6.4",
-    "otpauth": "^3.2.7",
+    "otpauth": "^3.2.8",
     "puppeteer": "^1.18.0",
     "qrcode-reader": "^1.0.4",
     "query-string": "^6.8.1",
